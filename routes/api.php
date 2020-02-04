@@ -18,17 +18,17 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::post('register', 'AuthController@register');
-Route::post('login', 'AuthController@login');
+Route::post('login', 'ApiController@login');
 
 
-Route::group(['middleware' => 'auth.jwt'], function () {
+Route::group(['middleware' => 'jwt.verify'], function () {
     Route::get('logout', 'ApiController@logout');
-
     Route::get('user', 'ApiController@getAuthUser');
-
     Route::get('students', 'StudentController@index')->name('student.all');
-    Route::get('student/{id}', 'StudentController@show')->name('student.show');
+    Route::get('student/{student}', 'StudentController@show')->name('student.show');
+
     Route::post('student', 'StudentController@store')->name('student.create');
-    Route::put('student/{id}', 'StudentController@update')->name('student.update');
-    Route::delete('student/{id}', 'StudentController@destroy')->name('student.delete');
+
+    Route::put('student/{student}', 'StudentController@update')->name('student.update');
+    Route::delete('student/{student}', 'StudentController@destroy')->name('student.delete');
 });

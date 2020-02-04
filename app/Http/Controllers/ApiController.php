@@ -45,22 +45,18 @@ class ApiController extends Controller
         return response()->json([
             'success' => true,
             'token' => $jwt_token,
-        ]);
+        ],200);
     }
 
     public function logout(Request $request)
     {
-        $this->validate($request, [
-            'token' => 'required'
-        ]);
-
         try {
             JWTAuth::invalidate($request->token);
 
             return response()->json([
                 'success' => true,
                 'message' => 'User logged out successfully'
-            ]);
+            ],200);
         } catch (JWTException $exception) {
             return response()->json([
                 'success' => false,
@@ -71,12 +67,9 @@ class ApiController extends Controller
 
     public function getAuthUser(Request $request)
     {
-        $this->validate($request, [
-            'token' => 'required'
-        ]);
-
         $user = JWTAuth::authenticate($request->token);
 
-        return response()->json(['user' => $user]);
+        return response()->json(['success' => true,
+            'user' => $user],200);
     }
 }

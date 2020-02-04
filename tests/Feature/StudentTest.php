@@ -30,12 +30,12 @@ class StudentTest extends TestCase
         ]);
         $token = JWTAuth::fromUser($user);
         return $token;
-
     }
 
 
     public function testCreate()
     {
+        $this->withoutExceptionHandling();
         // Get token
         $token = $this->authenticate();
         $response = $this->withHeaders([
@@ -43,13 +43,13 @@ class StudentTest extends TestCase
         ])->json('POST', route('student.create'),[
             'teacher_id' => 1,
             'classroom_id' => 1,
-            'firstname' => 'Pierce',
-            'lastname' => 'Dessant',
+            'firstname' => 'Kumar',
+            'lastname' => 'Dixit',
             'gender' => 'M',
-            'joined_year' => '2017'
+            'joined_year' => '2019'
         ]);
 
-        $response->assertStatus(200);
+        $response->assertStatus(201);
         User::where('email','dus1@gmail.com')->delete();
     }
 
@@ -74,7 +74,6 @@ class StudentTest extends TestCase
 
         $response->assertStatus(200);
         User::where('email','dus1@gmail.com')->delete();
-        $this->assertEquals(1,count($response->json()));
     }
 
 
@@ -92,17 +91,16 @@ class StudentTest extends TestCase
         // Call routing and assert response
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '. $token,
-        ])->json('PUT',route('student.update',['student' => $student->id]),[
+        ])->json('PUT',route('student.update',['student' => $student]),[
             'teacher_id' => 1,
             'classroom_id' => 2,
-            'firstname' => 'Juana155',
-            'lastname' => 'MacGall',
+            'firstname' => 'Juana1010',
+            'lastname' => 'MacGall1010',
             'gender' => 'F',
-            'joined_year' => '2018'
+            'joined_year' => '2019'
         ]);
         $response->assertStatus(200);
         User::where('email','dus1@gmail.com')->delete();
-
     }
 
 
@@ -122,7 +120,6 @@ class StudentTest extends TestCase
         ])->json('GET',route('student.show',['student' => $student->id]));
         $response->assertStatus(200);
         User::where('email','dus1@gmail.com')->delete();
-
     }
 
 
@@ -140,7 +137,7 @@ class StudentTest extends TestCase
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '. $token,
         ])->json('DELETE',route('student.delete',['student' => $student->id]));
-        $response->assertStatus(200);
+        $response->assertStatus(204);
         User::where('email','dus1@gmail.com')->delete();
     }
 

@@ -2,31 +2,37 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Http\Resources\StudentResource;
 use App\Student;
-use App\Http\Requests;
-use JWTAuth;
+use App\Http\Requests\StudentRequest;
+use Validator;
 
 class StudentController extends Controller
 {
 
     protected $user;
 
-    public function __construct()
-    {
-        $this->user = JWTAuth::parseToken()->authenticate();
-    }
-
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+        Display a listing of the students.
      */
+
     public function index()
     {
         $student = Student::all();
-        return StudentResource::collection($student);
+        if($student)
+        {
+            return response()->json([
+                'success' => true,
+                'message' => 'Display all students successfully',
+                'students' => $student
+            ],200);
+        }else
+        {
+            return response()->json([
+                'success' => false,
+                'message' => 'No student records found',
+                'students' => null
+            ],404);
+        }
     }
 
     /**
@@ -40,54 +46,50 @@ class StudentController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+      Store a newly created student.
      */
-    public function store(Request $request)
+
+    public function store(StudentRequest $request)
     {
-        $this->validate($request, [
-            'firstname' => 'required',
-            'lastname' => 'required',
-            'gender' => 'required',
-            'joined_year' => 'required|integer'
-        ]);
-
-        $student = new Student;
-        $student->teacher_id = $request->input('teacher_id');
-        $student->classroom_id = $request->input('classroom_id');
-        $student->firstname = $request->input('firstname');
-        $student->lastname = $request->input('lastname');
-        $student->gender = $request->input('gender');
-        $student->joined_year = $request->input('joined_year');
-
-        if ($student->save())
-            return response()->json([
-                'success' => true,
-                'student' => $student
-            ]);
-        else
-            return response()->json([
-                'success' => false,
-                'message' => 'Sorry, student record could not be added'
-            ], 500);
-
+        $validator = Validator::make($request->all);
+        if($validator)
+        {
+            $student = new Student;
+            if ($student->fill($request->all())->save()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Student added successfully',
+                    'student' => $student
+                ],201);
+            } else
+            {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sorry, student record could not be added'
+                ], 500);
+            }
+        }
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+        Display the specified student record.
      */
-    public function show($id)
+
+    public function show(Student $student)
     {
-        $student = Student::find($id);
-        if( $student ){
-            return new StudentResource($student);
+        if($student){
+            return response()->json([
+                'success' => true,
+                'message' => 'Specified student record',
+                'student' => $student
+            ],200);
+        }else
+        {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sorry, Student not found'
+            ], 404);
         }
-        return "Student Not found"; // temporary error
 
     }
 
@@ -103,37 +105,48 @@ class StudentController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+        Update specified student record
      */
-    public function update(Request $request, $id)
+
+    public function update(Student $student, StudentRequest $request)
     {
-        $student = Student::find($id);
-        $student->teacher_id = $request->input('teacher_id');
-        $student->classroom_id = $request->input('classroom_id');
-        $student->firstname = $request->input('firstname');
-        $student->lastname = $request->input('lastname');
-        $student->gender = $request->input('gender');
-        $student->joined_year = $request->input('joined_year');
-        $student->save();
-        return new StudentResource($student);
+        $validator = Validator::make($request->all);
+        if($validator) {
+            if ($student->fill($request->all())->save()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Student updated successfully',
+                    'student' => $student
+                ], 200);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sorry, student record could not be updated'
+                ], 500);
+            }
+        }
     }
 
+
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+        Remove the specified student record.
+        Json content will not be returned due to 204 http status code.
      */
-    public function destroy($id)
+
+    public function destroy(Student $student)
     {
-        $student = Student::findOrfail($id);
         if($student->delete()){
-            return  new StudentResource($student);
+            return response()->json([
+                'success' => true,
+                'message' => 'Student deleted successfully'
+            ],204);
+        }else
+        {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sorry, student record could not be deleted'
+            ], 500);
         }
-        return "Error while deleting";
+
     }
 }
